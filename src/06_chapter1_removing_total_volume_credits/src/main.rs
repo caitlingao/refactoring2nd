@@ -9,7 +9,7 @@ struct Invoice {
     performances: Vec<Perf>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Perf {
     play_id: String,
     audience: i32,
@@ -17,43 +17,33 @@ struct Perf {
 
 fn statement(invoice: &Invoice) -> String {
     let mut result = String::new();
-    result.push_str(&format!("Statement for {}\n", &invoice.customer));
+    result.push_str(&format!("Statement for {}\n", invoice.customer));
 
     for perf in &invoice.performances {
         // print line for this order
-        result.push_str(&format!("  {}: ${} ({} seats)\n", play_for(&perf)["name"].as_str().unwrap(), usd(amount_for(&perf)), &perf.audience.to_string()));
+        result.push_str(&format!("  {}: ${} ({} seats)\n", play_for(perf)["name"].as_str().unwrap(), usd(amount_for(perf)), perf.audience.to_string()));
     }
 
-    result.push_str(&format!("Amount owed is ${}\n", usd(total_amount(&invoice))));
-    result.push_str(&format!("You earned {} credits\n", total_volume_credits(&invoice).to_string()));
+    result.push_str(&format!("Amount owed is ${}\n", usd(total_amount(invoice))));
+    result.push_str(&format!("You earned {} credits\n", total_volume_credits(invoice).to_string()));
     result
 }
 
 fn total_amount(invoice: &Invoice) -> i32 {
-    let mut result = 0;
-    for perf in &invoice.performances {
-        result += amount_for(&perf);
-    }
-
-    result
+    invoice.performances.iter().fold(0, |result, perf| result + amount_for(&perf))
 }
 
 fn total_volume_credits(invoice: &Invoice) -> i32 {
-    let mut result = 0;
-    for perf in &invoice.performances {
-        result += volume_credits_for(&perf);
-    }
-
-    result
+    invoice.performances.iter().fold(0, |result, perf| result + volume_credits_for(&perf))
 }
 
 fn volume_credits_for(a_performance: &Perf) -> i32 {
     let mut result = 0;
     // add volume credits
-    result += 0.max(&a_performance.audience - 30);
+    result += 0.max(a_performance.audience - 30);
 
     // add extra credit for every ten comedy attendees
-    if play_for(&a_performance)["type"] == "comedy" { result += &a_performance.audience / 5; }
+    if play_for(a_performance)["type"] == "comedy" { result += a_performance.audience / 5; }
 
     result
 }

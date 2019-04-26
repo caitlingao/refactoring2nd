@@ -9,7 +9,7 @@ struct Invoice {
     performances: Vec<Perf>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Perf {
     play_id: String,
     audience: i32,

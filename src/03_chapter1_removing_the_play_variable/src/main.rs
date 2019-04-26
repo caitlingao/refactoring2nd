@@ -9,7 +9,7 @@ struct Invoice {
     performances: Vec<Perf>,
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize)]
 struct Perf {
     play_id: String,
     audience: i32,
@@ -19,17 +19,17 @@ fn statement(invoice: &Invoice) -> String {
     let mut total_amount = 0;
     let mut volume_credits = 0;
     let mut result = String::new();
-    result.push_str(&format!("Statement for {}\n", &invoice.customer));
+    result.push_str(&format!("Statement for {}\n", invoice.customer));
 
     for perf in &invoice.performances {
         // add volume credits
-        volume_credits += 0.max(&perf.audience - 30);
+        volume_credits += 0.max(perf.audience - 30);
 
         // add extra credit for every ten comedy attendees
-        if play_for(&perf)["type"] == "comedy" { volume_credits += &perf.audience / 5; }
+        if play_for(perf)["type"] == "comedy" { volume_credits += perf.audience / 5; }
 
         // print line for this order
-        result.push_str(&format!("  {}: ${} ({} seats)\n", play_for(&perf)["name"].as_str().unwrap(), &(amount_for(&perf) / 100).to_string(), &perf.audience.to_string()));
+        result.push_str(&format!("  {}: ${} ({} seats)\n", play_for(perf)["name"].as_str().unwrap(), &(amount_for(perf) / 100).to_string(), perf.audience.to_string()));
         total_amount += amount_for(&perf);
     }
 
